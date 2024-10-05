@@ -19,13 +19,15 @@ If the puzzle or list of words provided as inputs does not guarantee a unique so
 
 # Usage
 
-1. Clone the repository:
+1. Make sure that [node runtime](https://nodejs.org/en/download/package-manager) is installed on your machine.
+
+2. Clone the repository:
 
 ```bash
 git clone https://learn.zone01oujda.ma/git/asadiqui/crossword.git
 ```
 
-2. Provide inputs:
+3. Provide inputs:
 
 ```js
 const emptyPuzzle = `2001
@@ -38,13 +40,13 @@ const words = ['casa', 'alan', 'ciao', 'anta'];
 crosswordSolver(emptyPuzzle, words);
 ```
 
-3. Run the program:
+4. Run the program:
 
 ```bash
 node crosswordSolver.js
 ```
 
-4. Enjoy the solution:
+5. Enjoy the solution:
 
 ```bash
 casa
