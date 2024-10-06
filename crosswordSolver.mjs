@@ -1,149 +1,148 @@
-// Export to be used in test file
-export default crosswordSolver;
-
 // Check if all rows in the puzzle have the same length
-const hasUniformLength = (puzzle) => {
-    const rows = puzzle.split('\n');
-    const firstRowLength = rows[0].length;
-
+const hasSameLength = (puzzle) => {
+    let rows = puzzle.split('\n');
     for (let i = 1; i < rows.length; i++) {
-        if (rows[i].length !== firstRowLength) return false;
+        if (rows[i].length !== rows[0].length) return false;
     }
     return true;
 }
 
 // Validate puzzle format
 const isValidPuzzleFormat = (puzzle) => {
-    const puzzleRegex = /^[.\n012]+$/;
-
-    return (
-        typeof puzzle === "string" &&
-        puzzle !== "" &&
-        puzzleRegex.test(puzzle) &&
-        hasUniformLength(puzzle)
-    );
+    if (typeof puzzle !== "string" || puzzle === "" || new RegExp(!/^[.\n012]+$/).test(puzzle) || !hasSameLength(puzzle)) return false;
+    return true;
 }
 
 // Validate words format
 const isValidWordsFormat = (words) => {
-    return Array.isArray(words) && new Set(words).size === words.length;
+    if (!Array.isArray(words) || new Set(words).size !== words.length) return false;
+    return true;
 }
 
 // Check if word fits horizontally
-function canPlaceInRow(puzzle, word, rowIndex, colIndex) {
-    const row = puzzle[rowIndex];
-
-    if (word.length > row.length - colIndex) return false;
-
-    const segment = row.substring(colIndex, colIndex + word.length);
+const canInsertRow = (puzzle, word, row, col) => {
+    if (word.length > puzzle[row].length - col) return false;
 
     // Ensure characters match or are empty (".")
-    for (let k = 0; k < word.length; k++) {
-        if ((/[a-z]/.test(segment[k]) && segment[k] !== word[k]) || segment[k] === ".") {
-            return false;
-        }
+    let substring = puzzle[row].substring(col, col + word.length);
+    for (let k = 0; k < substring.length; k++) {
+        if ((/[a-z]/.test(substring[k]) && substring[k] !== word[k]) || substring[k] === ".") return false;
     }
 
     // Ensure no conflicts after the word
-    const remainingSegment = row.substring(colIndex + word.length);
-    for (let k = 0; k < remainingSegment.length; k++) {
-        if (remainingSegment[k] !== ".") return false;
+    substring = puzzle[row].substring(col);
+    if (substring.length > word.length) {
+        for (let k = word.length; k < substring.length; k++) {
+            if (substring[k] === ".") break;
+            else return false;
+        }
     }
-
     return true;
 }
 
 // Check if word fits vertically
-function canPlaceInColumn(puzzle, word, rowIndex, colIndex) {
-    let columnContent = "";
+const canInsertColumn = (puzzle, word, row, col) => {
+    let substring = "";
 
     // Build column string
-    for (let i = rowIndex; i < puzzle.length; i++) {
-        columnContent += puzzle[i][colIndex];
+    for (let k = row; k < puzzle.length; k++) {
+        substring += puzzle[k][col];
     }
 
-    if (word.length > columnContent.length) return false;
+    if (word.length > substring.length) return false;
 
     // Ensure characters match or are empty (".")
     for (let k = 0; k < word.length; k++) {
-        if ((/[a-z]/.test(columnContent[k]) && columnContent[k] !== word[k]) || columnContent[k] === ".") {
-            return false;
-        }
+        if ((/[a-z]/.test(substring[k]) && substring[k] !== word[k]) || substring[k] === ".") return false;
     }
 
     // Ensure no conflicts below the word
-    const remainingSegment = columnContent.substring(word.length);
-    for (let k = 0; k < remainingSegment.length; k++) {
-        if (remainingSegment[k] !== ".") return false;
+    if (substring.length > word.length) {
+        for (let k = word.length; k < substring.length; k++) {
+            if (substring[k] === ".") break;
+            else return false;
+        }
     }
-
     return true;
 }
 
 // Insert word horizontally
-function insertInRow(puzzle, words, rowIndex, colIndex) {
-    for (let i = 0; i < words.length; i++) {
-        if (canPlaceInRow(puzzle, words[i], rowIndex, colIndex)) {
-            const row = puzzle[rowIndex];
-            puzzle[rowIndex] = row.substring(0, colIndex) + words[i] + row.substring(colIndex + words[i].length);
-            words.splice(i, 1);
-            return;
+const insertWordInRow = (puzzle, words, row, col) => {
+    for (let k = 0; k < words.length; k++) {
+        if (canInsertRow(puzzle, words[k], row, col)) {
+            puzzle[row] = puzzle[row].substring(0, col) + words[k] + puzzle[row].substring(col + words[k].length);
+            words.splice(k, 1);
+            k -= 1;
+            break;
         }
     }
 }
 
 // Insert word vertically
-function insertInColumn(puzzle, words, rowIndex, colIndex) {
-    for (let i = 0; i < words.length; i++) {
-        if (canPlaceInColumn(puzzle, words[i], rowIndex, colIndex)) {
-            for (let j = 0; j < words[i].length; j++) {
-                puzzle[rowIndex + j] = puzzle[rowIndex + j].substring(0, colIndex) + words[i][j] + puzzle[rowIndex + j].substring(colIndex + 1);
+const insertWordInColumn = (puzzle, words, row, col) => {
+    for (let k = 0; k < words.length; k++) {
+        if (canInsertColumn(puzzle, words[k], row, col)) {
+            for (let l = row; l - row < words[k].length; l++) {
+                puzzle[l] = puzzle[l].substring(0, col) + words[k][l - row] + puzzle[l].substring(col + 1);
             }
-            words.splice(i, 1);
-            return;
+            words.splice(k, 1);
+            k -= 1;
+            break;
         }
     }
 }
 
 // Solve the puzzle
-function solvePuzzle(puzzle, words) {
-    if (words.length === 0 || puzzle.length === 0 || puzzle[0].length === 0) return puzzle;
+const solvePuzzle = (puzzle, words) => {
+    if (words.length === 0 || (puzzle.length === 1 && puzzle[0].length === 0)) return puzzle;
 
-    const puzzleCopy = [...puzzle];
-    const totalWords = words.length;
-    let wordCount = 0;
+    let wordsCount = words.length;
+    let puzzleCopy = [...puzzle];
+    let count = 0;
 
-    for (let rowIndex = 0; rowIndex < puzzle.length; rowIndex++) {
-        for (let colIndex = 0; colIndex < puzzle[0].length; colIndex++) {
-            if (/\d/.test(puzzle[rowIndex][colIndex]) && puzzle[rowIndex][colIndex] > "0") {
-                wordCount += Number(puzzle[rowIndex][colIndex]);
-                if (wordCount > totalWords) return ['Error'];
+    for (let x = 0; x < puzzle.length; x++) {
+        for (let y = 0; y < puzzle[0].length; y++) {
+            if (/\d/.test(puzzle[x][y]) && puzzle[x][y] > "0") {
+                count += parseInt(puzzle[x][y]);
+                if (count > wordsCount) return ['Error'];
 
-                insertInRow(puzzleCopy, words, rowIndex, colIndex);
-                insertInColumn(puzzleCopy, words, rowIndex, colIndex);
+                insertWordInRow(puzzleCopy, words, x, y);
+                insertWordInColumn(puzzleCopy, words, x, y);
             }
         }
     }
 
-    return words.length === 0 ? puzzleCopy : ['Error'];
+    return words.length === 0 ? puzzleCopy : ["Error"];
 }
 
 // Main crossword solver
 function crosswordSolver(puzzle, words) {
-    if (typeof puzzle !== 'string' || !Array.isArray(words)) {
-        return 'Error';
+    if (puzzle === '' || typeof puzzle !== 'string' || !Array.isArray(words)) return 'Error';
+
+    let canBeSolved = true;
+
+    function markError() {
+        canBeSolved = false;
+        return "Error";
     }
 
-    if (!isValidPuzzleFormat(puzzle) || !isValidWordsFormat(words) || words.length < 3) {
-        return 'Error';
+    if (!isValidPuzzleFormat(puzzle) || !isValidWordsFormat(words) || words.length < 3) return markError();
+
+    if (canBeSolved && isValidWordsFormat(words)) {
+        let wordsCopy = [...words].reverse();
+        let result = solvePuzzle(puzzle.split("\n"), words).join("\n");
+
+        return result === "Error" ? solvePuzzle(puzzle.split("\n"), wordsCopy).join("\n") : result;
+    } else {
+        return "Error";
     }
-
-    const puzzleGrid = puzzle.split('\n');
-    let result = solvePuzzle(puzzleGrid, words).join('\n');
-
-    if (result === 'Error') {
-        result = solvePuzzle(puzzleGrid, words.reverse()).join('\n');
-    }
-
-    return result;
 }
+
+// Export to be used in test file
+export default crosswordSolver;
+
+// Direct testing from here
+const puzzle = '2000\n0...\n0...\n0...'
+const words = ['abba', 'assa']
+
+console.log(crosswordSolver(puzzle, words));
