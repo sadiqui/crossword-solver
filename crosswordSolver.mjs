@@ -1,3 +1,6 @@
+// Export to be used in test file
+export default crosswordSolver;
+
 // Check if all rows in the puzzle have the same length
 const hasUniformLength = (puzzle) => {
     const rows = puzzle.split('\n');
