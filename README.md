@@ -55,6 +55,12 @@ anta
 o..n
 ```
 
+6. You can also run a test:
+
+```bash
+node crosswordSolverTest.js
+```
+
 ## Authors
 
 - [Abdelilah Sadiqui](https://learn.zone01oujda.ma/git/asadiqui)
