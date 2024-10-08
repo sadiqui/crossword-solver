@@ -117,24 +117,34 @@ const solvePuzzle = (puzzle, words) => {
 
 // Main crossword solver
 function crosswordSolver(puzzle, words) {
-    if (puzzle === '' || typeof puzzle !== 'string' || !Array.isArray(words)) return 'Error';
+    if (puzzle === '' || typeof puzzle !== 'string' || !Array.isArray(words)) {
+        console.log('Error');
+        return;
+    }
 
     let canBeSolved = true;
 
     function markError() {
         canBeSolved = false;
-        return "Error";
+        console.log("Error");
+        return;
     }
 
-    if (!isValidPuzzleFormat(puzzle) || !isValidWordsFormat(words) || words.length < 3) return markError();
+    if (!isValidPuzzleFormat(puzzle) || !isValidWordsFormat(words) || words.length < 3) {
+        return markError();
+    }
 
     if (canBeSolved && isValidWordsFormat(words)) {
         let wordsCopy = [...words].reverse();
         let result = solvePuzzle(puzzle.split("\n"), words).join("\n");
 
-        return result === "Error" ? solvePuzzle(puzzle.split("\n"), wordsCopy).join("\n") : result;
+        if (result === "Error") {
+            result = solvePuzzle(puzzle.split("\n"), wordsCopy).join("\n");
+        }
+
+        console.log(result);
     } else {
-        return "Error";
+        console.log("Error");
     }
 }
 
@@ -145,4 +155,4 @@ export default crosswordSolver;
 const puzzle = '2000\n0...\n0...\n0...'
 const words = ['abba', 'assa']
 
-console.log(crosswordSolver(puzzle, words));
+// crosswordSolver(puzzle, words);

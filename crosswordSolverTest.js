@@ -106,7 +106,7 @@ const crosswordSolverTest = () => {
         {
             puzzle: '',
             words: 123,
-            description: "Test wrong format checks"
+            description: "Test another wrong format"
         },
         {
             puzzle: `2000
@@ -128,8 +128,8 @@ const crosswordSolverTest = () => {
 
     testCases.forEach(({ puzzle, words, description }) => {
         try {
-            const result = crosswordSolver(puzzle, words);
-            console.log(`${description}:\n${result}`);
+            console.log(`\n${description}:`);
+            crosswordSolver(puzzle, words);
         } catch (error) {
             console.error(`${description} - Error occurred:`, error.message);
         }
