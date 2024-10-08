@@ -61,12 +61,6 @@ o..n
 node crosswordSolverTest.js
 ```
 
-## Authors
-
-- [Abdelilah Sadiqui](https://learn.zone01oujda.ma/git/asadiqui)
-- [Ayoub Rabya](https://learn.zone01oujda.ma/git/arabya)
-- [Mehdi Moulabbi](https://learn.zone01oujda.ma/git/mmoulabbi)
-
 ## License
 
 This project is open-sourced under [the MIT License](https://opensource.org/license/mit).
